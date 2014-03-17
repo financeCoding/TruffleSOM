@@ -7,14 +7,11 @@ import som.interpreter.Inliner;
 import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.vm.Universe;
 import som.vmobjects.SClass;
-import som.vmobjects.SObject;
 
-import com.oracle.truffle.api.dsl.Generic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
@@ -43,34 +40,12 @@ public abstract class LocalVariableNode extends ExpressionNode {
       super(slot);
     }
 
-    @Specialization(guards = "isUninitialized")
-    public SObject doNil() {
-      return Universe.current().nilObject;
-    }
-
-    @Specialization(guards = "isInitialized", rewriteOn = {FrameSlotTypeException.class})
-    public int doInteger(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getInt(slot);
-    }
-
-    @Specialization(guards = "isInitialized", rewriteOn = {FrameSlotTypeException.class})
-    public double doDouble(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getDouble(slot);
-    }
-
-    @Specialization(guards = "isInitialized", rewriteOn = {FrameSlotTypeException.class})
-    public Object doObject(final VirtualFrame frame) throws FrameSlotTypeException {
-      return frame.getObject(slot);
-    }
-
-    @Generic
+    @Specialization
     public Object doGeneric(final VirtualFrame frame) {
-      assert isInitialized();
+      if (isUninitialized()) {
+        return Universe.current().nilObject;
+      }
       return FrameUtil.getObjectSafe(frame, slot);
-    }
-
-    protected final boolean isInitialized() {
-      return slot.getKind() != FrameSlotKind.Illegal;
     }
 
     protected final boolean isUninitialized() {
@@ -121,47 +96,11 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
     public abstract ExpressionNode getExp();
 
-    @Specialization(guards = "isIntKind", rewriteOn = FrameSlotTypeException.class)
-    public int write(final VirtualFrame frame, final int expValue) throws FrameSlotTypeException {
-      frame.setInt(slot, expValue);
-      return expValue;
-    }
-
-    @Specialization(guards = "isDoubleKind", rewriteOn = FrameSlotTypeException.class)
-    public double write(final VirtualFrame frame, final double expValue) throws FrameSlotTypeException {
-      frame.setDouble(slot, expValue);
-      return expValue;
-    }
-
-    @Generic
+    @Specialization
     public Object writeGeneric(final VirtualFrame frame, final Object expValue) {
       ensureObjectKind();
       frame.setObject(slot, expValue);
       return expValue;
-    }
-
-    protected final boolean isIntKind() {
-      if (slot.getKind() == FrameSlotKind.Int) {
-        return true;
-      }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeIntToUninit");
-        slot.setKind(FrameSlotKind.Int);
-        return true;
-      }
-      return false;
-    }
-
-    protected final boolean isDoubleKind() {
-      if (slot.getKind() == FrameSlotKind.Double) {
-        return true;
-      }
-      if (slot.getKind() == FrameSlotKind.Illegal) {
-        transferToInterpreter("LocalVar.writeDoubleToUninit");
-        slot.setKind(FrameSlotKind.Double);
-        return true;
-      }
-      return false;
     }
 
     protected final void ensureObjectKind() {

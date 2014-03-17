@@ -14,8 +14,6 @@ import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFact
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalSuperReadNodeFactory;
-import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableReadNodeFactory;
 import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.vm.Universe;
 import som.vmobjects.SClass;
@@ -51,7 +49,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       transferToInterpreterAndInvalidate("UninitializedVariableReadNode");
 
       if (contextLevel > 0) {
-        NonLocalVariableReadNode node = NonLocalVariableReadNodeFactory.create(
+        NonLocalVariableReadNode node = new NonLocalVariableReadNode(
             contextLevel, variable.slot, localSelf);
         return replace(node).executeGeneric(frame);
       } else {
@@ -127,7 +125,7 @@ public abstract class UninitializedVariableNode extends ContextualNode {
       transferToInterpreterAndInvalidate("UninitializedSuperReadNode");
 
       if (accessesOuterContext()) {
-        NonLocalSuperReadNode node = NonLocalSuperReadNodeFactory.create(contextLevel,
+        NonLocalSuperReadNode node = new NonLocalSuperReadNode(contextLevel,
             variable.slot, localSelf, getLexicalSuperClass());
         return replace(node).executeGeneric(frame);
       } else {
