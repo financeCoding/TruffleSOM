@@ -21,7 +21,6 @@
  */
 package som.interpreter.nodes;
 
-import static com.oracle.truffle.api.nodes.NodeInfo.Kind.SPECIALIZED;
 import som.interpreter.SArguments;
 import som.interpreter.TruffleCompiler;
 import som.vm.Universe;
@@ -65,7 +64,7 @@ public abstract class GlobalNode extends ExpressionNode
       // Get the global from the universe
       Association assoc = universe.getGlobalsAssociation(globalName);
       if (assoc != null) {
-        return replace(new CachedGlobalReadNode(globalName, universe, assoc)).executeGeneric(frame);
+        return assoc.value;
       } else {
         unknownGlobalNotFound.enter();
         // if it is not defined, we will send a error message to the current
@@ -82,29 +81,6 @@ public abstract class GlobalNode extends ExpressionNode
     @Override
     public Kind getKind() {
         return Kind.UNINITIALIZED;
-    }
-  }
-
-  private static final class CachedGlobalReadNode extends GlobalNode {
-    private final Association assoc;
-
-    private CachedGlobalReadNode(final SSymbol globalName,
-        final Universe universe, final Association assoc) {
-      super(globalName, universe);
-      this.assoc = assoc;
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      return assoc.value;
-    }
-
-    @Override
-    public void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
-
-    @Override
-    public Kind getKind() {
-        return SPECIALIZED;
     }
   }
 }
