@@ -7,7 +7,6 @@ import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class StringPrims {
@@ -17,8 +16,6 @@ public class StringPrims {
     public String doSString(final String receiver, final String argument) {
       return receiver + argument;
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class AsSymbolPrim extends UnaryExpressionNode {
@@ -29,8 +26,6 @@ public class StringPrims {
     public SAbstractObject doSString(final String receiver) {
       return universe.symbolFor(receiver);
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class SubstringPrim extends TernaryExpressionNode {
@@ -42,7 +37,5 @@ public class StringPrims {
         return "Error - index out of bounds";
       }
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 }

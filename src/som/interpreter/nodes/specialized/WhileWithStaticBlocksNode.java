@@ -54,13 +54,6 @@ public abstract class WhileWithStaticBlocksNode extends BinaryExpressionNode {
   }
 
   @Override
-  public final void executeVoid(final VirtualFrame frame) {
-    SBlock rcvr = receiver.executeSBlock(frame);
-    SBlock arg  = argument.executeSBlock(frame);
-    executeEvaluatedVoid(frame, rcvr, arg);
-  }
-
-  @Override
   public final Object executeEvaluated(final VirtualFrame frame,
       final Object rcvr, final Object arg) {
     return doWhileConditionally(frame.pack(), (SBlock) rcvr, (SBlock) arg);

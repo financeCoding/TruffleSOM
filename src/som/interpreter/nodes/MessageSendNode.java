@@ -82,11 +82,6 @@ public final class MessageSendNode {
       }
       return arguments;
     }
-
-    @Override
-    public final void executeVoid(final VirtualFrame frame) {
-      executeGeneric(frame);
-    }
   }
 
   private static final class UninitializedMessageSendNode

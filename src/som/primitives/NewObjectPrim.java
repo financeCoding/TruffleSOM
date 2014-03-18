@@ -6,7 +6,6 @@ import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public abstract class NewObjectPrim extends UnaryExpressionNode {
@@ -17,6 +16,4 @@ public abstract class NewObjectPrim extends UnaryExpressionNode {
   public SAbstractObject doSClass(final SClass receiver) {
     return universe.newInstance(receiver);
   }
-  @Override
-  public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
 }

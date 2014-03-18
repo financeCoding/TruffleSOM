@@ -10,7 +10,6 @@ import som.vmobjects.SObject;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class SystemPrims {
@@ -54,8 +53,6 @@ public class SystemPrims {
       SAbstractObject result = universe.getGlobal(argument);
       return result != null ? result : universe.nilObject;
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class GlobalPutPrim extends TernaryExpressionNode {
@@ -106,8 +103,6 @@ public class SystemPrims {
     public int doSObject(final SObject receiver) {
       return (int) (System.currentTimeMillis() - startTime);
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class TicksPrim extends UnarySystemNode {
@@ -115,8 +110,6 @@ public class SystemPrims {
     public int doSObject(final SObject receiver) {
       return (int) (System.nanoTime() / 1000L - startMicroTime);
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   {

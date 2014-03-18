@@ -6,7 +6,6 @@ import som.interpreter.nodes.nary.UnaryExpressionNode;
 import som.primitives.arithmetic.ArithmeticPrim;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public abstract class DoublePrims  {
@@ -21,9 +20,6 @@ public abstract class DoublePrims  {
         return (int) val;
       }
     }
-
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class BitXorPrim extends ArithmeticPrim {

@@ -41,14 +41,6 @@ public final class EagerBinaryPrimitiveNode extends BinaryExpressionNode {
   }
 
   @Override
-  public void executeVoid(final VirtualFrame frame) {
-    Object rcvr = receiver.executeGeneric(frame);
-    Object arg  = argument.executeGeneric(frame);
-
-    executeEvaluatedVoid(frame, rcvr, arg);
-  }
-
-  @Override
   public Object executeEvaluated(final VirtualFrame frame,
     final Object receiver, final Object argument) {
     try {

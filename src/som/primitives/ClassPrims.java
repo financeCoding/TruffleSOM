@@ -5,7 +5,6 @@ import som.vmobjects.SAbstractObject;
 import som.vmobjects.SClass;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class ClassPrims {
@@ -15,8 +14,6 @@ public class ClassPrims {
     public SAbstractObject doSClass(final SClass receiver) {
       return receiver.getName();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class SuperClassPrim extends UnaryExpressionNode {
@@ -24,8 +21,6 @@ public class ClassPrims {
     public SAbstractObject doSClass(final SClass receiver) {
       return receiver.getSuperClass();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class InstanceInvokablesPrim extends UnaryExpressionNode {
@@ -33,8 +28,6 @@ public class ClassPrims {
     public SAbstractObject doSClass(final SClass receiver) {
       return receiver.getInstanceInvokables();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class InstanceFieldsPrim extends UnaryExpressionNode {
@@ -42,7 +35,5 @@ public class ClassPrims {
     public SAbstractObject doSClass(final SClass receiver) {
       return receiver.getInstanceFields();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 }

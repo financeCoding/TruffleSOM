@@ -34,12 +34,6 @@ public class EagerUnaryPrimitiveNode extends UnaryExpressionNode {
   }
 
   @Override
-  public void executeVoid(final VirtualFrame frame) {
-    Object rcvr = receiver.executeGeneric(frame);
-    executeEvaluatedVoid(frame, rcvr);
-  }
-
-  @Override
   public Object executeEvaluated(final VirtualFrame frame,
       final Object receiver) {
     try {

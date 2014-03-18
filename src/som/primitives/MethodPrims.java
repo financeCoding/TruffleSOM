@@ -5,7 +5,6 @@ import som.vmobjects.SAbstractObject;
 import som.vmobjects.SInvokable;
 
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.VirtualFrame;
 
 
 public class MethodPrims {
@@ -15,8 +14,6 @@ public class MethodPrims {
     public SAbstractObject doSMethod(final SInvokable receiver) {
       return receiver.getSignature();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
   public abstract static class HolderPrim extends UnaryExpressionNode {
@@ -24,7 +21,5 @@ public class MethodPrims {
     public SAbstractObject doSMethod(final SInvokable receiver) {
       return receiver.getHolder();
     }
-    @Override
-    public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 }
