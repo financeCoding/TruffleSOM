@@ -5,7 +5,6 @@ import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
-import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
@@ -144,7 +143,7 @@ public final class MessageSendNode {
     private GenericMessageSendNode makeGenericSend() {
       GenericMessageSendNode send = new GenericMessageSendNode(selector,
           receiverNode, argumentNodes,
-          new UninitializedDispatchNode(selector, Universe.current()));
+          new GenericDispatchNode(selector, Universe.current()));
       return replace(send);
     }
 
@@ -311,7 +310,7 @@ public final class MessageSendNode {
         final ExpressionNode[] argumentNodes) {
       return new GenericMessageSendNode(selector,
           receiverNode, argumentNodes,
-          new UninitializedDispatchNode(selector, Universe.current()));
+          new GenericDispatchNode(selector, Universe.current()));
     }
 
     @Child private AbstractDispatchNode dispatchNode;
