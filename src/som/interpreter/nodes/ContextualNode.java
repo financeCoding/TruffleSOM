@@ -21,11 +21,10 @@
  */
 package som.interpreter.nodes;
 
+import som.interpreter.SArguments;
 import som.vmobjects.SBlock;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -33,15 +32,9 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 public abstract class ContextualNode extends ExpressionNode {
 
   protected final int            contextLevel;
-  protected final FrameSlot      localSelf;
 
-  public ContextualNode(final int contextLevel, final FrameSlot localSelf) {
+  public ContextualNode(final int contextLevel) {
     this.contextLevel = contextLevel;
-    this.localSelf    = localSelf;
-  }
-
-  protected final Object getLocalSelfSlotIdentifier() {
-    return localSelf.getIdentifier();
   }
 
   public final int getContextLevel() {
@@ -65,7 +58,7 @@ public abstract class ContextualNode extends ExpressionNode {
   }
 
   private SBlock getLocalSelf(final VirtualFrame frame) {
-    return (SBlock) FrameUtil.getObjectSafe(frame, localSelf);
+    return (SBlock) SArguments.getReceiverFromFrame(frame);
   }
 
   @ExplodeLoop

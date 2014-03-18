@@ -1,7 +1,7 @@
 package som.interpreter;
 
 import com.oracle.truffle.api.Arguments;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.Frame;
 
 public final class SArguments extends Arguments {
   private final Object   receiver;
@@ -20,11 +20,11 @@ public final class SArguments extends Arguments {
     return arguments;
   }
 
-  public static Object[] getArgumentsFromFrame(final VirtualFrame frame) {
+  public static Object[] getArgumentsFromFrame(final Frame frame) {
     return frame.getArguments(SArguments.class).arguments;
   }
 
-  public static Object getReceiverFromFrame(final VirtualFrame frame) {
+  public static Object getReceiverFromFrame(final Frame frame) {
     return frame.getArguments(SArguments.class).receiver;
   }
 }

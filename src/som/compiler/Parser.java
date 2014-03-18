@@ -450,10 +450,8 @@ public class Parser {
     if (mgenc.isBlockMethod()) {
       ExpressionNode result = new ReturnNonLocalNode(exp,
           mgenc.getFrameOnStackMarkerSlot(),
-          mgenc.getOuterSelfSlot(),
           mgenc.getOuterSelfContextLevel(),
-          universe,
-          mgenc.getLocalSelfSlot());
+          universe);
       assignSource(result, coord);
       mgenc.makeCatchNonLocalReturn();
       return result;
@@ -540,7 +538,7 @@ public class Parser {
         ExpressionNode result;
         if (bgenc.requiresContext()) {
           result = new BlockNodeWithContext(blockMethod, universe,
-              mgenc.getOuterSelfSlot(), mgenc.getOuterSelfContextLevel());
+              mgenc.getOuterSelfContextLevel());
         } else {
           result = new BlockNode(blockMethod, universe);
         }
@@ -795,15 +793,13 @@ public class Parser {
     if ("super".equals(variableName)) {
       Variable variable = mgenc.getVariable("self");
       return variable.getSuperReadNode(mgenc.getOuterSelfContextLevel(),
-          mgenc.getHolder().getName(), mgenc.getHolder().isClassSide(),
-          mgenc.getLocalSelfSlot());
+          mgenc.getHolder().getName(), mgenc.getHolder().isClassSide());
     }
 
     // now look up first local variables, or method arguments
     Variable variable = mgenc.getVariable(variableName);
     if (variable != null) {
-      return variable.getReadNode(mgenc.getContextLevel(variableName),
-          mgenc.getLocalSelfSlot());
+      return variable.getReadNode(mgenc.getContextLevel(variableName));
     }
 
     // then object fields
@@ -823,8 +819,7 @@ public class Parser {
       final String variableName, final ExpressionNode exp) {
     Local variable = mgenc.getLocal(variableName);
     if (variable != null) {
-      return variable.getWriteNode(mgenc.getContextLevel(variableName),
-          mgenc.getLocalSelfSlot(), exp);
+      return variable.getWriteNode(mgenc.getContextLevel(variableName), exp);
     }
 
     SSymbol fieldName = universe.symbolFor(variableName);

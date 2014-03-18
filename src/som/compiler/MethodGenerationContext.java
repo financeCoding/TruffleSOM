@@ -32,10 +32,8 @@ import java.util.LinkedHashMap;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.LexicalContext;
-import som.interpreter.nodes.ArgumentInitializationNode;
 import som.interpreter.nodes.ArgumentReadNode;
 import som.interpreter.nodes.ArgumentReadNode.SelfArgumentReadNode;
-import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.FieldNode.FieldReadNode;
 import som.interpreter.nodes.FieldNode.FieldWriteNode;
@@ -43,8 +41,6 @@ import som.interpreter.nodes.FieldNodeFactory.FieldReadNodeFactory;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
@@ -161,17 +157,6 @@ public class MethodGenerationContext {
     }
   }
 
-  private ArgumentInitializationNode addArgumentInitialization(final ExpressionNode methodBody) {
-    LocalVariableWriteNode[] writes = new LocalVariableWriteNode[arguments.size()];
-
-    for (Argument arg : arguments.values()) {
-      writes[arg.index + 1] = LocalVariableWriteNodeFactory.create(arg.slot,
-          (arg.isSelf()) ? new SelfArgumentReadNode()
-                         : new ArgumentReadNode(arg.index));
-    }
-    return new ArgumentInitializationNode(writes, methodBody);
-  }
-
   public SMethod assemble(final Universe universe, ExpressionNode methodBody) {
     ArrayList<Variable> onlyLocalAccess = new ArrayList<>(arguments.size() + locals.size());
     ArrayList<Variable> nonLocalAccess  = new ArrayList<>(arguments.size() + locals.size());
@@ -255,7 +240,7 @@ public class MethodGenerationContext {
 //    }
 
     // it is not a simple method, so we need to add argument initialization
-    return addArgumentInitialization(methodBody);
+    return methodBody;
   }
 
   private ExpressionNode createSimpleArgumentAccessNode(
@@ -290,8 +275,7 @@ public class MethodGenerationContext {
       throw new IllegalStateException("The self argument always has to be the first argument of a method");
     }
 
-    Argument argument = new Argument(arg, frameDescriptor.addFrameSlot(arg),
-        arguments.size() - 1);
+    Argument argument = new Argument(arg, null, arguments.size() - 1);
     arguments.put(arg, argument);
   }
 
@@ -342,18 +326,6 @@ public class MethodGenerationContext {
     return level;
   }
 
-  public FrameSlot getOuterSelfSlot() {
-    if (outerGenc == null) {
-      return getLocalSelfSlot();
-    } else {
-      return outerGenc.getOuterSelfSlot();
-    }
-  }
-
-  public FrameSlot getLocalSelfSlot() {
-    return arguments.values().iterator().next().slot;
-  }
-
   public int getContextLevel(final String varName) {
     if (locals.containsKey(varName) || arguments.containsKey(varName)) {
       return 0;
@@ -400,9 +372,8 @@ public class MethodGenerationContext {
     return null;
   }
 
-  private ContextualNode getSelfRead() {
-    return getVariable("self").getReadNode(getContextLevel("self"),
-        getLocalSelfSlot());
+  private ExpressionNode getSelfRead() {
+     return getVariable("self").getReadNode(getOuterSelfContextLevel());
   }
 
   public FieldReadNode getObjectFieldRead(final SSymbol fieldName) {

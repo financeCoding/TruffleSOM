@@ -1,6 +1,10 @@
 package som.compiler;
 
 import static som.interpreter.TruffleCompiler.transferToInterpreterAndInvalidate;
+import som.interpreter.nodes.ArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.NonLocalSelfArgumentReadNode;
+import som.interpreter.nodes.ArgumentReadNode.SelfArgumentReadNode;
 import som.interpreter.nodes.ContextualNode;
 import som.interpreter.nodes.ExpressionNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedSuperReadNode;
@@ -48,24 +52,15 @@ public abstract class Variable {
     return isReadOutOfContext;
   }
 
-  public final ContextualNode getReadNode(final int contextLevel,
-      final FrameSlot localSelf) {
-    transferToInterpreterAndInvalidate("Variable.getReadNode");
-    isRead = true;
-    if (contextLevel > 0) {
-      isReadOutOfContext = true;
-    }
-    return new UninitializedVariableReadNode(this, contextLevel, localSelf);
-  }
+  public abstract ExpressionNode getReadNode(final int contextLevel);
 
   public final UninitializedSuperReadNode getSuperReadNode(final int contextLevel,
-      final SSymbol holderClass, final boolean classSide,
-      final FrameSlot localSelf) {
+      final SSymbol holderClass, final boolean classSide) {
     isRead = true;
     if (contextLevel > 0) {
       isReadOutOfContext = true;
     }
-    return new UninitializedSuperReadNode(this, contextLevel, localSelf,
+    return new UninitializedSuperReadNode(this, contextLevel,
         holderClass, classSide);
   }
 
@@ -87,6 +82,25 @@ public abstract class Variable {
 
     public boolean isSelf() {
       return "self".equals(name) || "$blockSelf".equals(name);
+    }
+
+    @Override
+    public ExpressionNode getReadNode(final int contextLevel) {
+      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      isRead = true;
+      if (contextLevel > 0) {
+        isReadOutOfContext = true;
+      }
+      if (isSelf()) {
+        if (contextLevel > 0) {
+          return new NonLocalSelfArgumentReadNode(contextLevel);
+        }
+        return new SelfArgumentReadNode();
+      }
+      if (contextLevel > 0) {
+        return new NonLocalArgumentReadNode(contextLevel, index);
+      }
+      return new ArgumentReadNode(index);
     }
   }
 
@@ -120,15 +134,24 @@ public abstract class Variable {
       return super.isAccessedOutOfContext() || isWrittenOutOfContext;
     }
 
+    @Override
+    public ContextualNode getReadNode(final int contextLevel) {
+      transferToInterpreterAndInvalidate("Variable.getReadNode");
+      isRead = true;
+      if (contextLevel > 0) {
+        isReadOutOfContext = true;
+      }
+      return new UninitializedVariableReadNode(this, contextLevel);
+    }
+
     public ExpressionNode getWriteNode(final int contextLevel,
-        final FrameSlot localSelf,
         final ExpressionNode valueExpr) {
       transferToInterpreterAndInvalidate("Variable.getWriteNode");
       isWritten = true;
       if (contextLevel > 0) {
         isWrittenOutOfContext = true;
       }
-      return new UninitializedVariableWriteNode(this, contextLevel, localSelf, valueExpr);
+      return new UninitializedVariableWriteNode(this, contextLevel, valueExpr);
     }
   }
 }

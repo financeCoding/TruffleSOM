@@ -4,9 +4,7 @@ import static som.interpreter.TruffleCompiler.transferToInterpreter;
 import som.compiler.Variable;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.vm.Universe;
-import som.vmobjects.SClass;
 import som.vmobjects.SObject;
 
 import com.oracle.truffle.api.dsl.Generic;
@@ -81,29 +79,6 @@ public abstract class LocalVariableNode extends ExpressionNode {
     public final void executeVoid(final VirtualFrame frame) { /* NOOP, side effect free */ }
   }
 
-  public abstract static class LocalSuperReadNode
-                       extends LocalVariableReadNode implements ISuperReadNode {
-    private final SClass superClass;
-
-    public LocalSuperReadNode(final Variable variable, final SClass superClass) {
-      this(variable.slot, superClass);
-    }
-
-    public LocalSuperReadNode(final FrameSlot slot, final SClass superClass) {
-      super(slot);
-      this.superClass = superClass;
-    }
-
-    public LocalSuperReadNode(final LocalSuperReadNode node) {
-      this(node.slot, node.superClass);
-    }
-
-    @Override
-    public final SClass getSuperClass() {
-      return superClass;
-    }
-  }
-
   @NodeChild(value = "exp", type = ExpressionNode.class)
   public abstract static class LocalVariableWriteNode extends LocalVariableNode {
 
@@ -173,13 +148,7 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
     @Override
     public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      if (getParent() instanceof ArgumentInitializationNode) {
-        FrameSlot varSlot = inliner.getLocalFrameSlot(getSlotIdentifier());
-        assert varSlot != null;
-        replace(LocalVariableWriteNodeFactory.create(varSlot, getExp()));
-      } else {
-        throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
-      }
+      throw new RuntimeException("Should not be part of an uninitalized tree. And this should only be done with uninitialized trees.");
     }
   }
 }

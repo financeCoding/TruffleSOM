@@ -3,13 +3,12 @@ package som.interpreter.nodes.literals;
 import static com.oracle.truffle.api.nodes.NodeInfo.Kind.SPECIALIZED;
 import som.interpreter.Inliner;
 import som.interpreter.Invokable;
+import som.interpreter.SArguments;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
 import som.vmobjects.SInvokable;
 import som.vmobjects.SInvokable.SMethod;
 
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo.Kind;
@@ -54,36 +53,26 @@ public class BlockNode extends LiteralNode {
   }
 
   public static final class BlockNodeWithContext extends BlockNode {
-    private final FrameSlot outerSelfSlot;
     private final int       contextLevel;
 
     public BlockNodeWithContext(final SMethod blockMethod,
-        final Universe universe, final FrameSlot outerSelfSlot,
+        final Universe universe,
         final int contextLevel) {
       super(blockMethod, universe);
-      this.outerSelfSlot = outerSelfSlot;
       this.contextLevel  = contextLevel;
     }
 
-    public BlockNodeWithContext(final BlockNodeWithContext node,
-        final FrameSlot inlinedOuterSelfSlot) {
-      this(node.blockMethod, node.universe, inlinedOuterSelfSlot, node.contextLevel);
+    public BlockNodeWithContext(final BlockNodeWithContext node) {
+      this(node.blockMethod, node.universe, node.contextLevel);
     }
 
     public Object getOuterSelf(final MaterializedFrame frame) {
-      return FrameUtil.getObjectSafe(frame, outerSelfSlot);
+      return SArguments.getReceiverFromFrame(frame);
     }
 
     @Override
     public SBlock executeSBlock(final VirtualFrame frame) {
       return universe.newBlock(blockMethod, frame.materialize(), this);
-    }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot inlinedOuterSelfSlot = inliner.getFrameSlot(outerSelfSlot.getIdentifier(), contextLevel);
-      assert    inlinedOuterSelfSlot != null;
-      replace(new BlockNodeWithContext((SMethod) cloneMethod(inliner), universe, inlinedOuterSelfSlot, contextLevel));
     }
   }
 }
