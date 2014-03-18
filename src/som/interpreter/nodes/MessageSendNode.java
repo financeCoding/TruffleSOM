@@ -1,7 +1,6 @@
 package som.interpreter.nodes;
 
 import som.interpreter.TruffleCompiler;
-import som.interpreter.TypesGen;
 import som.interpreter.nodes.dispatch.AbstractDispatchNode;
 import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
@@ -9,11 +8,6 @@ import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
-import som.interpreter.nodes.specialized.IfFalseMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
-import som.interpreter.nodes.specialized.IfTrueMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
-import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
 import som.primitives.ArrayPrimsFactory.AtPrimFactory;
@@ -189,12 +183,6 @@ public final class MessageSendNode {
                 (SBlock) receiver, argBlock, Universe.current()));
           }
           break; // use normal send
-        case "ifTrue:":
-          return replace(IfTrueMessageNodeFactory.create(receiver, arguments[0],
-              Universe.current(), receiverNode, argumentNodes[0]));
-        case "ifFalse:":
-          return replace(IfFalseMessageNodeFactory.create(receiver, arguments[0],
-              Universe.current(), receiverNode, argumentNodes[0]));
 
         // TODO: find a better way for primitives, use annotation or something
         case "<":
@@ -270,33 +258,11 @@ public final class MessageSendNode {
 
     private PreevaluatedExpression specializeTernary(final Object receiver,
         final Object[] arguments) {
-      switch (selector.getString()) {
-        case "ifTrue:ifFalse:":
-          return replace(IfTrueIfFalseMessageNodeFactory.create(receiver,
-              arguments[0], arguments[1], Universe.current(), receiverNode,
-              argumentNodes[0], argumentNodes[1]));
-        case "to:do:":
-          if (TypesGen.TYPES.isImplicitInteger(receiver) &&
-              (TypesGen.TYPES.isImplicitInteger(arguments[0]) ||
-                  TypesGen.TYPES.isImplicitDouble(arguments[0])) &&
-              TypesGen.TYPES.isSBlock(arguments[1])) {
-            return replace(IntToDoMessageNodeFactory.create(this,
-                (SBlock) arguments[1], receiverNode, argumentNodes[0],
-                argumentNodes[1]));
-          }
-          break;
-      }
       return makeGenericSend();
     }
 
     private PreevaluatedExpression specializeQuaternary(final Object receiver,
         final Object[] arguments) {
-      switch (selector.getString()) {
-        case "to:by:do:":
-          return replace(IntToByDoMessageNodeFactory.create(this,
-              (SBlock) arguments[2], receiverNode, argumentNodes[0],
-              argumentNodes[1], argumentNodes[2]));
-      }
       return makeGenericSend();
     }
   }
