@@ -7,8 +7,6 @@ import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
-import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
-import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
 import som.interpreter.nodes.specialized.IfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfTrueIfFalseMessageNodeFactory;
 import som.interpreter.nodes.specialized.IfTrueMessageNodeFactory;
@@ -16,27 +14,8 @@ import som.interpreter.nodes.specialized.IntToByDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.IntToDoMessageNodeFactory;
 import som.interpreter.nodes.specialized.WhileWithStaticBlocksNode.WhileFalseStaticBlocksNode;
 import som.interpreter.nodes.specialized.WhileWithStaticBlocksNode.WhileTrueStaticBlocksNode;
-import som.primitives.ArrayPrimsFactory.AtPrimFactory;
-import som.primitives.ArrayPrimsFactory.NewPrimFactory;
-import som.primitives.BlockPrimsFactory.ValueNonePrimFactory;
-import som.primitives.BlockPrimsFactory.ValueOnePrimFactory;
-import som.primitives.DoublePrimsFactory.BitXorPrimFactory;
-import som.primitives.EqualsEqualsPrimFactory;
-import som.primitives.EqualsPrimFactory;
-import som.primitives.LengthPrimFactory;
-import som.primitives.arithmetic.AdditionPrimFactory;
-import som.primitives.arithmetic.DividePrimFactory;
-import som.primitives.arithmetic.DoubleDivPrimFactory;
-import som.primitives.arithmetic.LessThanOrEqualPrimFactory;
-import som.primitives.arithmetic.LessThanPrimFactory;
-import som.primitives.arithmetic.LogicAndPrimFactory;
-import som.primitives.arithmetic.ModuloPrimFactory;
-import som.primitives.arithmetic.MultiplicationPrimFactory;
-import som.primitives.arithmetic.SubtractionPrimFactory;
 import som.vm.Universe;
-import som.vmobjects.SArray;
 import som.vmobjects.SBlock;
-import som.vmobjects.SClass;
 import som.vmobjects.SSymbol;
 
 import com.oracle.truffle.api.CompilerDirectives.SlowPath;
@@ -149,19 +128,6 @@ public final class MessageSendNode {
     }
 
     private PreevaluatedExpression specializeUnary(final Object receiver) {
-      switch (selector.getString()) {
-        // eagerly but causious:
-        case "value":
-          if (receiver instanceof SBlock) {
-            return replace(new EagerUnaryPrimitiveNode(selector, receiverNode,
-                ValueNonePrimFactory.create(receiverNode)));
-          }
-        case "length":
-          if (receiver instanceof SArray) {
-            return replace(new EagerUnaryPrimitiveNode(selector, receiverNode,
-                LengthPrimFactory.create(receiverNode)));
-          }
-      }
       return makeGenericSend();
     }
 
@@ -195,74 +161,6 @@ public final class MessageSendNode {
         case "ifFalse:":
           return replace(IfFalseMessageNodeFactory.create(receiver, arguments[0],
               Universe.current(), receiverNode, argumentNodes[0]));
-
-        // TODO: find a better way for primitives, use annotation or something
-        case "<":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              LessThanPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "<=":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              LessThanOrEqualPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "+":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              AdditionPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "value:":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              ValueOnePrimFactory.create(receiverNode, argumentNodes[0])));
-        case "-":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              SubtractionPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "*":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              MultiplicationPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "=":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              EqualsPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "==":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              EqualsEqualsPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "bitXor:":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              BitXorPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "//":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              DoubleDivPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "%":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              ModuloPrimFactory.create(receiverNode, argumentNodes[0])));
-        case "/":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              DividePrimFactory.create(receiverNode, argumentNodes[0])));
-        case "&":
-          return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-              argumentNodes[0],
-              LogicAndPrimFactory.create(receiverNode, argumentNodes[0])));
-
-        // eagerly but causious:
-        case "at:":
-          if (receiver instanceof SArray) {
-            return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-                argumentNodes[0],
-                AtPrimFactory.create(receiverNode, argumentNodes[0])));
-          }
-        case "new:":
-          if (receiver instanceof SClass) {
-            return replace(new EagerBinaryPrimitiveNode(selector, receiverNode,
-                argumentNodes[0],
-                NewPrimFactory.create(receiverNode, argumentNodes[0])));
-          }
       }
 
       return makeGenericSend();
