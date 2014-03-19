@@ -30,7 +30,6 @@ import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 
 import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
@@ -110,77 +109,5 @@ public final class ReturnNonLocalNode extends ContextualNode {
   @Override
   public Kind getKind() {
       return SPECIALIZED;
-  }
-
-  public static class CatchNonLocalReturnNode extends ExpressionNode {
-    @Child protected ExpressionNode methodBody;
-    private final BranchProfile nonLocalReturnHandler;
-    private final FrameSlot frameOnStackMarker;
-
-    public CatchNonLocalReturnNode(final ExpressionNode methodBody,
-        final FrameSlot frameOnStackMarker) {
-      this.methodBody = adoptChild(methodBody);
-      this.nonLocalReturnHandler = new BranchProfile();
-      this.frameOnStackMarker    = frameOnStackMarker;
-    }
-
-    @Override
-    public ExpressionNode getFirstMethodBodyNode() {
-      return methodBody;
-    }
-
-    @Override
-    public Object executeGeneric(final VirtualFrame frame) {
-      FrameOnStackMarker marker = new FrameOnStackMarker();
-      frameOnStackMarker.setKind(FrameSlotKind.Object);
-      frame.setObject(frameOnStackMarker, marker);
-
-      Object result;
-      try {
-        result = methodBody.executeGeneric(frame);
-      } catch (ReturnException e) {
-        nonLocalReturnHandler.enter();
-        if (!e.reachedTarget(marker)) {
-          marker.frameNoLongerOnStack();
-          throw e;
-        } else {
-          result = e.result();
-        }
-      }
-
-      marker.frameNoLongerOnStack();
-      return result;
-    }
-
-    @Override
-    public final void executeVoid(final VirtualFrame frame) {
-      FrameOnStackMarker marker = new FrameOnStackMarker();
-      frameOnStackMarker.setKind(FrameSlotKind.Object);
-      frame.setObject(frameOnStackMarker, marker);
-
-      try {
-        methodBody.executeVoid(frame);
-      } catch (ReturnException e) {
-        nonLocalReturnHandler.enter();
-        if (!e.reachedTarget(marker)) {
-          marker.frameNoLongerOnStack();
-          throw e;
-        }
-      }
-
-      marker.frameNoLongerOnStack();
-    }
-
-    @Override
-    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-      FrameSlot inlinedFrameOnStackMarker = inliner.getLocalFrameSlot(frameOnStackMarker.getIdentifier());
-      assert inlinedFrameOnStackMarker != null;
-      replace(new CatchNonLocalReturnNode(methodBody, inlinedFrameOnStackMarker));
-    }
-
-    @Override
-    public Kind getKind() {
-        return SPECIALIZED;
-    }
   }
 }

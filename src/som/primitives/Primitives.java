@@ -82,7 +82,7 @@ public abstract class Primitives {
       throw new RuntimeException("TODO: implement this case!");
     }
 
-    Primitive primMethodNode = new Primitive(primNode, mgen.getFrameDescriptor());
+    Primitive primMethodNode = new Primitive(primNode, mgen.getFrameDescriptor(), mgen.getFrameOnStackMarkerSlot());
     SInvokable prim = universe.newMethod(signature, primMethodNode, true);
     return prim;
   }
@@ -100,7 +100,7 @@ public abstract class Primitives {
     }
 
     ExpressionNode primNode = EmptyPrim.create(self);
-    Primitive primMethodNode = new Primitive(primNode, mgen.getFrameDescriptor());
+    Primitive primMethodNode = new Primitive(primNode, mgen.getFrameDescriptor(), mgen.getFrameOnStackMarkerSlot());
     SInvokable prim = universe.newMethod(signature, primMethodNode, true);
     return prim;
   }

@@ -3,14 +3,16 @@ package som.interpreter;
 import som.interpreter.nodes.ExpressionNode;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.RootNode;
 
 
 public class Primitive extends Invokable {
 
   public Primitive(final ExpressionNode primitive,
-      final FrameDescriptor frameDescriptor) {
-    super(null, frameDescriptor, primitive);
+      final FrameDescriptor frameDescriptor,
+      final FrameSlot frameOnStackMarker) {
+    super(null, frameDescriptor, primitive, frameOnStackMarker);
   }
 
   @Override
@@ -20,7 +22,7 @@ public class Primitive extends Invokable {
         outerContext);
     ExpressionNode  inlinedBody = Inliner.doInline(getUninitializedBody(),
         inlinedContext);
-    return new Primitive(inlinedBody, inlinedFrameDescriptor);
+    return new Primitive(inlinedBody, inlinedFrameDescriptor, frameOnStackMarker);
   }
 
   @Override

@@ -45,7 +45,6 @@ import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
 import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
 import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
-import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.literals.LiteralNode;
@@ -76,7 +75,7 @@ public class MethodGenerationContext {
   private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
 
   private final FrameDescriptor frameDescriptor;
-  private       FrameSlot       frameOnStackSlot;
+  private final FrameSlot       frameOnStackSlot;
   private       LexicalContext  lexicalContext;
 
   public MethodGenerationContext() {
@@ -84,6 +83,7 @@ public class MethodGenerationContext {
     accessesVariablesOfOuterContext = false;
     throwsNonLocalReturn            = false;
     needsToCatchNonLocalReturn      = false;
+    frameOnStackSlot = frameDescriptor.addFrameSlot(frameOnStackSlotName);
   }
 
   public void setHolder(final ClassGenerationContext cgenc) {
@@ -113,10 +113,6 @@ public class MethodGenerationContext {
   public FrameSlot getFrameOnStackMarkerSlot() {
     if (outerGenc != null) {
       return outerGenc.getFrameOnStackMarkerSlot();
-    }
-
-    if (frameOnStackSlot == null) {
-      frameOnStackSlot = frameDescriptor.addFrameSlot(frameOnStackSlotName);
     }
     return frameOnStackSlot;
   }
@@ -180,18 +176,12 @@ public class MethodGenerationContext {
 
     SourceSection sourceSection = methodBody.getSourceSection();
 
-    if (needsToCatchNonLocalReturn()) {
-      methodBody = new CatchNonLocalReturnNode(methodBody,
-          getFrameOnStackMarkerSlot());
-      methodBody.assignSourceSection(sourceSection);
-    }
-
     methodBody.assignSourceSection(sourceSection);
     methodBody = prepareForExecution(methodBody);
 
     som.interpreter.Method truffleMethod =
         new som.interpreter.Method(getSourceSectionForMethod(sourceSection),
-            frameDescriptor, methodBody, universe, getLexicalContext());
+            frameDescriptor, methodBody, universe, getLexicalContext(), getFrameOnStackMarkerSlot());
 
     SMethod meth = (SMethod) universe.newMethod(signature, truffleMethod, false);
 

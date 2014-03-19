@@ -26,6 +26,7 @@ import som.vm.Universe;
 
 import com.oracle.truffle.api.SourceSection;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.RootNode;
 
 
@@ -38,8 +39,9 @@ public class Method extends Invokable {
                 final FrameDescriptor frameDescriptor,
                 final ExpressionNode expressions,
                 final Universe universe,
-                final LexicalContext outerContext) {
-    super(sourceSection, frameDescriptor, expressions);
+                final LexicalContext outerContext,
+                final FrameSlot frameOnStackMarker) {
+    super(sourceSection, frameDescriptor, expressions, frameOnStackMarker);
     this.universe     = universe;
     this.outerContext = outerContext;
   }
@@ -60,7 +62,7 @@ public class Method extends Invokable {
     ExpressionNode  inlinedBody = Inliner.doInline(getUninitializedBody(),
         inlinedContext);
     return new Method(getSourceSection(), inlinedFrameDescriptor, inlinedBody,
-        universe, outerContext);
+        universe, outerContext, frameOnStackMarker);
   }
 
   @Override
