@@ -5,12 +5,6 @@ import som.compiler.Variable;
 import som.compiler.Variable.Argument;
 import som.compiler.Variable.Local;
 import som.interpreter.Inliner;
-import som.interpreter.nodes.LocalVariableNode.LocalSuperReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalSuperReadNodeFactory;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableReadNodeFactory;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalSuperReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableReadNode;
 import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
@@ -50,14 +44,9 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableReadNode");
 
-      if (contextLevel > 0) {
-        NonLocalVariableReadNode node = NonLocalVariableReadNodeFactory.create(
-            contextLevel, variable.slot, localSelf);
-        return replace(node).executeGeneric(frame);
-      } else {
-        LocalVariableReadNode node = LocalVariableReadNodeFactory.create(variable);
-        return replace(node).executeGeneric(frame);
-      }
+      NonLocalVariableReadNode node = NonLocalVariableReadNodeFactory.create(
+          contextLevel, variable.slot, localSelf);
+      return replace(node).executeGeneric(frame);
     }
 
     @Override
@@ -126,15 +115,9 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedSuperReadNode");
 
-      if (accessesOuterContext()) {
-        NonLocalSuperReadNode node = NonLocalSuperReadNodeFactory.create(contextLevel,
-            variable.slot, localSelf, getLexicalSuperClass());
-        return replace(node).executeGeneric(frame);
-      } else {
-        LocalSuperReadNode node = LocalSuperReadNodeFactory.create(variable,
-            getLexicalSuperClass());
-        return replace(node).executeGeneric(frame);
-      }
+      NonLocalSuperReadNode node = NonLocalSuperReadNodeFactory.create(contextLevel,
+          variable.slot, localSelf, getLexicalSuperClass());
+      return replace(node).executeGeneric(frame);
     }
 
     @Override
@@ -170,28 +153,18 @@ public abstract class UninitializedVariableNode extends ContextualNode {
     public Object executeGeneric(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableWriteNode");
 
-      if (accessesOuterContext()) {
-        NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
-            contextLevel, variable.slot, localSelf, exp);
-        return replace(node).executeGeneric(frame);
-      } else {
-        LocalVariableWriteNode node = LocalVariableWriteNodeFactory.create((Local) variable, exp);
-        return replace(node).executeGeneric(frame);
-      }
+      NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
+          contextLevel, variable.slot, localSelf, exp);
+      return replace(node).executeGeneric(frame);
     }
 
     @Override
     public void executeVoid(final VirtualFrame frame) {
       transferToInterpreterAndInvalidate("UninitializedVariableWriteNode");
 
-      if (accessesOuterContext()) {
-        NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
-            contextLevel, variable.slot, localSelf, exp);
-        replace(node).executeVoid(frame);
-      } else {
-        LocalVariableWriteNode node = LocalVariableWriteNodeFactory.create((Local) variable, exp);
-        replace(node).executeVoid(frame);
-      }
+      NonLocalVariableWriteNode node = NonLocalVariableWriteNodeFactory.create(
+          contextLevel, variable.slot, localSelf, exp);
+      replace(node).executeVoid(frame);
     }
 
     @Override

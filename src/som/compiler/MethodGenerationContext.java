@@ -43,8 +43,8 @@ import som.interpreter.nodes.FieldNodeFactory.FieldReadNodeFactory;
 import som.interpreter.nodes.FieldNodeFactory.FieldWriteNodeFactory;
 import som.interpreter.nodes.GlobalNode;
 import som.interpreter.nodes.GlobalNode.UninitializedGlobalReadNode;
-import som.interpreter.nodes.LocalVariableNode.LocalVariableWriteNode;
-import som.interpreter.nodes.LocalVariableNodeFactory.LocalVariableWriteNodeFactory;
+import som.interpreter.nodes.NonLocalVariableNode.NonLocalVariableWriteNode;
+import som.interpreter.nodes.NonLocalVariableNodeFactory.NonLocalVariableWriteNodeFactory;
 import som.interpreter.nodes.ReturnNonLocalNode.CatchNonLocalReturnNode;
 import som.interpreter.nodes.UninitializedVariableNode.UninitializedVariableReadNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
@@ -162,10 +162,11 @@ public class MethodGenerationContext {
   }
 
   private ArgumentInitializationNode addArgumentInitialization(final ExpressionNode methodBody) {
-    LocalVariableWriteNode[] writes = new LocalVariableWriteNode[arguments.size()];
+    NonLocalVariableWriteNode[] writes = new NonLocalVariableWriteNode[arguments.size()];
 
     for (Argument arg : arguments.values()) {
-      writes[arg.index + 1] = LocalVariableWriteNodeFactory.create(arg.slot,
+      writes[arg.index + 1] = NonLocalVariableWriteNodeFactory.create(0, arg.slot,
+          getLocalSelfSlot(),
           (arg.isSelf()) ? new SelfArgumentReadNode()
                          : new ArgumentReadNode(arg.index));
     }

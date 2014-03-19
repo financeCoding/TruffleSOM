@@ -29,11 +29,11 @@ import som.vm.Universe;
 import som.vmobjects.SAbstractObject;
 import som.vmobjects.SBlock;
 
+import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.FrameUtil;
-import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo.Kind;
 import com.oracle.truffle.api.utilities.BranchProfile;
@@ -66,7 +66,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
         node.contextLevel, node.universe, inlinedLocalSelfSlot);
   }
 
-  private FrameOnStackMarker getMarkerFromContext(final MaterializedFrame ctx) {
+  private FrameOnStackMarker getMarkerFromContext(final Frame ctx) {
     try {
       return (FrameOnStackMarker) ctx.getObject(frameOnStackMarker);
     } catch (FrameSlotTypeException e) {
@@ -76,7 +76,7 @@ public final class ReturnNonLocalNode extends ContextualNode {
 
   @Override
   public Object executeGeneric(final VirtualFrame frame) {
-    MaterializedFrame ctx = determineContext(frame);
+    Frame ctx = determineContext(frame);
     FrameOnStackMarker marker = getMarkerFromContext(ctx);
 
     if (marker.isOnStack()) {
