@@ -74,5 +74,11 @@ public class BlockNode extends LiteralNode {
     public SBlock executeSBlock(final VirtualFrame frame) {
       return universe.newBlock(blockMethod, frame.materialize(), this);
     }
+
+    @Override
+    public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
+      SMethod forInlining = (SMethod) cloneMethod(inliner);
+      replace(new BlockNodeWithContext(forInlining, universe, contextLevel));
+    }
   }
 }
