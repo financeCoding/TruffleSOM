@@ -1,7 +1,7 @@
 package som.interpreter.nodes.specialized;
 
 import som.interpreter.SArguments;
-import som.interpreter.nodes.literals.BlockNode;
+import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.nary.BinaryExpressionNode;
 import som.vm.Universe;
 import som.vmobjects.SBlock;
@@ -20,16 +20,16 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 
 public abstract class WhileWithStaticBlocksNode extends BinaryExpressionNode {
-  @Child protected BlockNode receiver;
-  @Child protected BlockNode argument;
+  @Child protected BlockNodeWithContext receiver;
+  @Child protected BlockNodeWithContext argument;
   @Child protected CallNode  conditionValueSend;
   @Child protected CallNode  bodyValueSend;
 
   protected final SObject predicateBool;
   private final Universe universe;
 
-  private WhileWithStaticBlocksNode(final BlockNode receiver,
-      final BlockNode argument, final SBlock rcvr, final SBlock arg,
+  private WhileWithStaticBlocksNode(final BlockNodeWithContext receiver,
+      final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
       final SObject predicateBool, final Universe universe) {
     this.receiver = adoptChild(receiver);
     this.argument = adoptChild(argument);
@@ -114,16 +114,16 @@ public abstract class WhileWithStaticBlocksNode extends BinaryExpressionNode {
   }
 
   public static final class WhileTrueStaticBlocksNode extends WhileWithStaticBlocksNode {
-    public WhileTrueStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
+    public WhileTrueStaticBlocksNode(final BlockNodeWithContext receiver,
+        final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
         final Universe universe) {
       super(receiver, argument, rcvr, arg, universe.trueObject, universe);
     }
   }
 
   public static final class WhileFalseStaticBlocksNode extends WhileWithStaticBlocksNode {
-    public WhileFalseStaticBlocksNode(final BlockNode receiver,
-        final BlockNode argument, final SBlock rcvr, final SBlock arg,
+    public WhileFalseStaticBlocksNode(final BlockNodeWithContext receiver,
+        final BlockNodeWithContext argument, final SBlock rcvr, final SBlock arg,
         final Universe universe) {
       super(receiver, argument, rcvr, arg, universe.falseObject, universe);
     }

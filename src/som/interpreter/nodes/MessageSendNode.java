@@ -7,6 +7,7 @@ import som.interpreter.nodes.dispatch.GenericDispatchNode;
 import som.interpreter.nodes.dispatch.SuperDispatchNode;
 import som.interpreter.nodes.dispatch.UninitializedDispatchNode;
 import som.interpreter.nodes.literals.BlockNode;
+import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.nary.EagerBinaryPrimitiveNode;
 import som.interpreter.nodes.nary.EagerUnaryPrimitiveNode;
 import som.interpreter.nodes.specialized.IfFalseMessageNodeFactory;
@@ -171,10 +172,10 @@ public final class MessageSendNode {
         case "whileTrue:": {
           if (argumentNodes[0] instanceof BlockNode &&
               receiverNode instanceof BlockNode) {
-            BlockNode argBlockNode = (BlockNode) argumentNodes[0];
+            BlockNodeWithContext argBlockNode = (BlockNodeWithContext) argumentNodes[0];
             SBlock    argBlock     = (SBlock)    arguments[0];
             return replace(new WhileTrueStaticBlocksNode(
-                (BlockNode) receiverNode, argBlockNode, (SBlock) receiver,
+                (BlockNodeWithContext) receiverNode, argBlockNode, (SBlock) receiver,
                 argBlock, Universe.current()));
           }
           break; // use normal send
@@ -182,10 +183,10 @@ public final class MessageSendNode {
         case "whileFalse:":
           if (argumentNodes[0] instanceof BlockNode &&
               receiverNode instanceof BlockNode) {
-            BlockNode argBlockNode = (BlockNode) argumentNodes[0];
+            BlockNodeWithContext argBlockNode = (BlockNodeWithContext) argumentNodes[0];
             SBlock    argBlock     = (SBlock)    arguments[0];
             return replace(new WhileFalseStaticBlocksNode(
-                (BlockNode) receiverNode, argBlockNode,
+                (BlockNodeWithContext) receiverNode, argBlockNode,
                 (SBlock) receiver, argBlock, Universe.current()));
           }
           break; // use normal send

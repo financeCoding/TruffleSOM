@@ -74,7 +74,6 @@ import som.interpreter.nodes.MessageSendNode.AbstractMessageSendNode;
 import som.interpreter.nodes.ReturnNonLocalNode;
 import som.interpreter.nodes.SequenceNode;
 import som.interpreter.nodes.literals.BigIntegerLiteralNode;
-import som.interpreter.nodes.literals.BlockNode;
 import som.interpreter.nodes.literals.BlockNode.BlockNodeWithContext;
 import som.interpreter.nodes.literals.IntegerLiteralNode;
 import som.interpreter.nodes.literals.LiteralNode;
@@ -537,13 +536,8 @@ public class Parser {
         ExpressionNode blockBody = nestedBlock(bgenc);
 
         SMethod blockMethod = bgenc.assemble(universe, blockBody);
-        ExpressionNode result;
-        if (bgenc.requiresContext()) {
-          result = new BlockNodeWithContext(blockMethod, universe,
+        ExpressionNode result = new BlockNodeWithContext(blockMethod, universe,
               mgenc.getOuterSelfSlot(), mgenc.getOuterSelfContextLevel());
-        } else {
-          result = new BlockNode(blockMethod, universe);
-        }
         assignSource(result, coord);
         return result;
       }

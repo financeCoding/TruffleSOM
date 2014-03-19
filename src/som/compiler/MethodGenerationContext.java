@@ -70,8 +70,6 @@ public class MethodGenerationContext {
   private boolean                    needsToCatchNonLocalReturn;
   private boolean                    throwsNonLocalReturn;
 
-  private boolean                    accessesVariablesOfOuterContext;
-
   private final LinkedHashMap<String, Argument> arguments = new LinkedHashMap<String, Argument>();
   private final LinkedHashMap<String, Local>    locals    = new LinkedHashMap<String, Local>();
 
@@ -81,7 +79,6 @@ public class MethodGenerationContext {
 
   public MethodGenerationContext() {
     frameDescriptor = new FrameDescriptor();
-    accessesVariablesOfOuterContext = false;
     throwsNonLocalReturn            = false;
     needsToCatchNonLocalReturn      = false;
   }
@@ -127,10 +124,6 @@ public class MethodGenerationContext {
     MethodGenerationContext ctx = getOuterContext();
     assert ctx != null;
     ctx.needsToCatchNonLocalReturn = true;
-  }
-
-  public boolean requiresContext() {
-    return throwsNonLocalReturn || accessesVariablesOfOuterContext;
   }
 
   private MethodGenerationContext getOuterContext() {
@@ -376,11 +369,7 @@ public class MethodGenerationContext {
     }
 
     if (outerGenc != null) {
-      Variable outerVar = outerGenc.getVariable(varName);
-      if (outerVar != null) {
-        accessesVariablesOfOuterContext = true;
-      }
-      return outerVar;
+      return outerGenc.getVariable(varName);
     }
     return null;
   }
@@ -391,11 +380,7 @@ public class MethodGenerationContext {
     }
 
     if (outerGenc != null) {
-      Local outerLocal = outerGenc.getLocal(varName);
-      if (outerLocal != null) {
-        accessesVariablesOfOuterContext = true;
-      }
-      return outerLocal;
+      return outerGenc.getLocal(varName);
     }
     return null;
   }

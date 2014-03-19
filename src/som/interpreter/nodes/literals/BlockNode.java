@@ -14,7 +14,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo.Kind;
 
-public class BlockNode extends LiteralNode {
+public abstract class BlockNode extends LiteralNode {
 
   protected final SMethod  blockMethod;
   protected final Universe universe;
@@ -22,22 +22,6 @@ public class BlockNode extends LiteralNode {
   public BlockNode(final SMethod blockMethod, final Universe universe) {
     this.blockMethod  = blockMethod;
     this.universe     = universe;
-  }
-
-  @Override
-  public SBlock executeSBlock(final VirtualFrame frame) {
-    return universe.newBlock(blockMethod, null, null);
-  }
-
-  @Override
-  public final Object executeGeneric(final VirtualFrame frame) {
-    return executeSBlock(frame);
-  }
-
-  @Override
-  public void replaceWithIndependentCopyForInlining(final Inliner inliner) {
-    SMethod forInlining = (SMethod) cloneMethod(inliner);
-    replace(new BlockNode(forInlining, universe));
   }
 
   protected SInvokable cloneMethod(final Inliner inliner) {
@@ -72,6 +56,11 @@ public class BlockNode extends LiteralNode {
 
     public Object getOuterSelf(final MaterializedFrame frame) {
       return FrameUtil.getObjectSafe(frame, outerSelfSlot);
+    }
+
+    @Override
+    public Object executeGeneric(final VirtualFrame frame) {
+      return executeSBlock(frame);
     }
 
     @Override
